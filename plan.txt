@@ -13,6 +13,7 @@ this can actually be used for all 3 commands as a security measure
 parts of progrm needed:
 -function to check email for new messages
 -function to read messages/determine unread vs read messages
+
 -function to extract message info (sender,password,command,filename)
 -function to check password
 -function to download attachment if password checks out
