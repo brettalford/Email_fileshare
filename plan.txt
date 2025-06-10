@@ -1,0 +1,23 @@
+Okay so the plan for this program is to create a system that allows you to email files (under the gmail limit) from your computer to any device
+these fiels will be stored in  specified open folder partly for security reasons partly because its more manageable
+there will be two maybe three basic commands
+command 1: List files command will allo you to see the file directory so you can get the names of the files
+command 2: Get (filename) which will enble you to select which file you want to have sent to you.
+potential 3rd command: Push (filename) (with your file as an email attchment) this will upload that file to the shared
+file folder. potential risk with this is it allows code to be injected but the benefit is it allows files to be uploaded
+to your device easily.
+possible command 3 security solution:require  password after Push (it Push 87952 (filename) (included attachment)) it isnt
+the most advanced method of protection but should prevent random people from accessing data they dont hav the right to
+this can actually be used for all 3 commands as a security measure
+
+parts of progrm needed:
+-function to check email for new messages
+-function to read messages/determine unread vs read messages
+-function to extract message info (sender,password,command,filename)
+-function to check password
+-function to download attachment if password checks out
+-function to retrieve file names and content
+-function to assemble message depending on push get or list(information,command)
+-function to send message to user email
+
+system will expect all info in subject line ie (Get 87952 example.txt)
