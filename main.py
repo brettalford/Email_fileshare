@@ -78,21 +78,32 @@ def extract_info(msg):
     command=""
     message_password=""
     filename=""
-    attachment=""
-    sender_email=""
+    attachment=None
+    sender_email=msg.get("From")
 
-    #code to gather info for command and password will be here
+    #get subject line
+    subject=msg.get("Subject","")
 
+    #getting parts of subject line
+    parts = [p.strip() for p in subject.split(',')]
+    #if you at least have command and password (because list only has two)
+    if len(parts) >=2:
+        #command is first
+        command = parts[0]
+        #password
+        message_password = parts[1]
+        if len(parts)>2:
+            #filename
+            filename = parts[2] 
+    else:
+        print("inproper format")
+        return
     #check password before attachment is ever even looked at for security reasons
     code=checkpassword([command,message_password,"filler","filler"])
     #if code is zero end
     if code==0:
         print("invalid message")
         return 
-    
-
-    #get the filename, sender email, and attchment now that password has been verified
-
     #calling list command
     if code==1:
         list_command(sender_email)
@@ -101,13 +112,21 @@ def extract_info(msg):
         get_command([command,message_password,filename,sender_email,None])
     #push command
     elif code==3:
+        #get attachment now that verified
+        #go through all parts
+        for part in msg.walk():
+            #if part is an attachment
+            if part.get_content_disposition() == "attachment":
+                #get the attachment
+                attachment = part.get_payload(decode=True)
+                #stop because only one attachment allowed
+                break
+        #call the push command now that everything is set up
         push_command([command,message_password,filename,sender_email,attachment])
-
     #something wrong
     else:
         print("somethin went wrong")
-        return 0
-
+        return 
     return
 
 #will return 1 if valid 0 if invalid so that theres no risk of downloading malicious attachments
@@ -136,6 +155,9 @@ def checkpassword(email_info):
         print("incorrect password")
         return 0
     
+
+
+
 #list
 def list_command(return_address):
     print("printing files and folders")
@@ -147,6 +169,9 @@ def list_command(return_address):
 
     #now send it to the response email function
     response_email(return_address,subject_line,content)
+
+
+
 
 #get
 def get_command(email_info):
