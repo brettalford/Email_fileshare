@@ -258,7 +258,7 @@ def get_command(email_info):
             #set content to success message
             content = f"The folder '{filename}' was zipped and attached."
             #send to response email
-            response_email(email_info[3], subject_line, content, attachment=attachment)
+            response_email(email_info[3], subject_line, content, f"{filename}.zip", attachment=attachment)
         except Exception as e:
             content = f"Error zipping folder: {str(e)}"
             response_email(email_info[3], subject_line, content, attachment=None)
