@@ -5,6 +5,8 @@ import imaplib
 import os
 import io
 import zipfile
+from email.message import EmailMessage
+import mimetypes
 
 #global password to change for every user so it can be customized
 password=123456
@@ -137,7 +139,7 @@ def extract_info(msg):
 def checkpassword(email_info):
     print("checking password")
     #if the password recieved is the same as the password
-    if email_info[1]==(password) :
+    if str(email_info[1]) == str(password):
         #depending on command return command code, listed in expected use order
         #if the command is get return 2
         if email_info[0]=="Get":
@@ -197,7 +199,8 @@ def get_command(email_info):
     subject_line = "Requested file/folder"
     content = ""
     filename = email_info[2]
-   
+    found_file_path = None
+    found_dir_path = None
 
     # Walk through root_folder recursively
     for dirpath, dirnames, filenames in os.walk(root_folder):
@@ -227,7 +230,7 @@ def get_command(email_info):
         #exception
         except Exception as e:
             content = f"Error reading file: {str(e)}"
-            response_email(email_info[3], subject_line, content, attachment=None)
+            response_email(email_info[3], subject_line, content, filename, attachment=None)
 
 
     #if you find the folder
@@ -289,14 +292,41 @@ def push_command(email_info):
         content=f"error pushing file {str(e)}"
 
     #send it to response email function
-    response_email(email_info[3],subject_line,content,attachment=None)
-
+    response_email(email_info[3],subject_line,content,file_name,attachment=None)
 
 
 #compiling return email
-def response_email(return_email,subject,content,attachment):
+def response_email(return_email,subject,content,filename=None,attachment=None):
     print("sending return email")
     #sending file
+    #create the email message
+    msg = EmailMessage()
+    #set the address to the program emal
+    msg["From"] = program_address
+    #set to the original message sender
+    msg["To"] = return_email
+    #subject line
+    msg["Subject"] = subject
+    #body content
+    msg.set_content(content)
+
+    # if theres an attachment
+    if attachment:
+        mimetype, _ = mimetypes.guess_type(filename or "attachment")
+        maintype, subtype = ("application", "octet-stream")
+        if mimetype:
+            maintype, subtype = mimetype.split('/', 1)
+
+        msg.add_attachment(attachment, maintype=maintype, subtype=subtype, filename=filename or "attachment")
+
+    # Connect and login to SMTP server (Gmail SMTP shown here)
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+        #login
+        smtp.login(program_address, program_mail_password)
+        #send the message
+        smtp.send_message(msg)
+
+
 
 
 if __name__ == '__main__':
