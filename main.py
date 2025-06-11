@@ -17,7 +17,11 @@ program_mail_password=""
 #imap server
 Imap="imap.gmail.com"
 #root folder
-root_folder = "shared_files"
+root_folder = ""
+
+
+
+
 
 #check email for new commands
 def checkmail():
@@ -89,21 +93,20 @@ def extract_info(msg):
 
     #get subject line
     subject=msg.get("Subject","")
+    print(subject)
 
     #getting parts of subject line
     parts = [p.strip() for p in subject.split(',')]
     #if you at least have command and password (because list only has two)
-    if len(parts) >=2:
-        #command is first
+    if len(parts) >= 2:
         command = parts[0]
-        #password
         message_password = parts[1]
-        if len(parts)>2:
-            #filename
-            filename = parts[2] 
+        filename = parts[2] if len(parts) > 2 else ""
+
     else:
         print("inproper format")
         return
+    
     #check password before attachment is ever even looked at for security reasons
     code=checkpassword([command,message_password,"filler","filler"])
     #if code is zero end
@@ -121,11 +124,14 @@ def extract_info(msg):
         #get attachment now that verified
         #go through all parts
         for part in msg.walk():
-            #if part is an attachment
-            if part.get_content_disposition() == "attachment":
-                #get the attachment
+            content_disposition = str(part.get("Content-Disposition", "")).lower()
+            filename_in_email = part.get_filename()
+
+            if "attachment" in content_disposition or filename_in_email:
                 attachment = part.get_payload(decode=True)
-                #stop because only one attachment allowed
+                # Use real filename if you want to override the subject line name:
+                if filename_in_email:
+                    filename = filename_in_email
                 break
         #call the push command now that everything is set up
         push_command([command,message_password,filename,sender_email,attachment])
@@ -135,7 +141,7 @@ def extract_info(msg):
         return 
     return
 
-#will return 1 if valid 0 if invalid so that theres no risk of downloading malicious attachments
+#will return 1 or higher if valid 0 if invalid so that theres no risk of downloading malicious attachments
 def checkpassword(email_info):
     print("checking password")
     #if the password recieved is the same as the password
@@ -189,9 +195,10 @@ def list_command(return_address):
                     tree += f"{sub_indent}{f}\n"
     except Exception as e:
         tree=f"error detected in listing {e}"
-    print(tree)
+    #print tree
     #now send it to the response email function
-    response_email(return_address,subject_line,tree,attachment=None)
+    safe_tree = tree.encode('utf-8', errors='replace').decode()
+    response_email(return_address, subject_line, safe_tree, attachment=None)
 
 #get
 def get_command(email_info):
@@ -226,7 +233,7 @@ def get_command(email_info):
             #file found message
             content = f"The file '{filename}' was found and attached."
             #sending email
-            response_email(email_info[3], subject_line, content, attachment=attachment)
+            response_email(email_info[3], subject_line, content, filename, attachment=attachment)
         #exception
         except Exception as e:
             content = f"Error reading file: {str(e)}"

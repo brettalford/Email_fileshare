@@ -1,0 +1,16 @@
+Prerequisites:
+Currently set up to use gmail but that can be altered fairly easily
+To set up this program you need three things
+-A folder address to plug into root_folder (this will be where all your shared files sit)
+-the address you want to be sending the information, a personal gmail address will work just fine
+-an app password for the gmail account you wish to use, this required 2 factor authentication to get
+-either use the default password or change it to one of your own
+
+Usage Instructions:
+There are 3 basic commands List,Get, and Push.
+List (called by:List,password) returns an email showing you the file directory so you can see the names of everything youre working with
+Get (called by:Get,password,filename.extension) retrieves the chosen file stored on your system, exact name must be used
+Push (called by:Push,password,filename.extension  with a file attached to your message)downloads a file to the folder location
+
+Everything you need to do in order to transfer files is have the program actively running and send these commands to the gmail account you have set up
+the program is currently on a 30 second sleep timer so that it does not take up to0 many resources but the timer can be changed easily
